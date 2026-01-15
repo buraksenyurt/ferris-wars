@@ -1,0 +1,236 @@
+const std = @import("std");
+const rl = @import("raylib");
+const config = @import("config.zig").Config;
+const Player = @import("player.zig").Player;
+const Game = @import("game.zig").Game;
+const AssetServer = @import("assetServer.zig").AssetServer;
+const TextBlock = @import("textBlock.zig").TextBlock;
+const TextAlignment = @import("textBlock.zig").TextAlignment;
+const Designer = @import("designer.zig");
+const PlayerScore = @import("data.zig").PlayerScore;
+const Data = @import("data.zig");
+
+pub fn main() !void {
+    rl.setRandomSeed(@intCast(std.time.timestamp()));
+
+    rl.initWindow(config.SCREEN_WIDTH, config.SCREEN_HEIGHT, "Ferris Wars Game in Zig with Raylib");
+    defer rl.closeWindow();
+
+    rl.initAudioDevice();
+    defer rl.closeAudioDevice();
+
+    rl.setTargetFPS(config.FPS);
+
+    const assetServer = try AssetServer.load();
+
+    var game = try Game.init(
+        assetServer,
+    );
+    game.bestScore = try Data.loadPlayerScore();
+
+    defer assetServer.unload();
+
+    gameLoop: while (!rl.windowShouldClose()) {
+        const deltaTime = rl.getFrameTime();
+
+        rl.beginDrawing();
+        defer rl.endDrawing();
+
+        if (!rl.isSoundPlaying(assetServer.levelMusic) and game.music == .On) {
+            rl.playSound(assetServer.levelMusic);
+        }
+
+        rl.clearBackground(config.BACKGROUND_COLOR);
+
+        rl.drawRectangle(
+            0,
+            config.AREA_HEIGHT,
+            config.SCREEN_WIDTH,
+            config.SCREEN_HEIGHT - config.AREA_HEIGHT,
+            config.HUD_BACKGROUND_COLOR,
+        );
+        Designer.hudText.draw(
+            .Left,
+            .{
+                game.totalBotCount,
+                game.remainingBots,
+                game.currentScore.score,
+                game.player.totalBulletsFired,
+                @as(i32, @intFromFloat(game.currentScore.elapsedTime)),
+            },
+        );
+
+        switch (game.state) {
+            .Initial => {
+                rl.drawTexture(
+                    assetServer.cover,
+                    0,
+                    0,
+                    rl.Color.white,
+                );
+
+                if (rl.isKeyPressed(rl.KeyboardKey.enter) or Designer.StartGameButton.isClicked()) {
+                    game.state = .Playing;
+                }
+
+                if (Designer.ConfigureButton.isClicked()) {
+                    game.state = .MenuConfigure;
+                }
+            },
+            .MenuConfigure => {
+                rl.clearBackground(config.BACKGROUND_COLOR);
+                Designer.configureView.draw(TextAlignment.Center, .{});
+
+                if (rl.isKeyPressed(rl.KeyboardKey.m)) {
+                    switch (game.music) {
+                        .On => game.music = .Off,
+                        .Off => game.music = .On,
+                    }
+                    game.setMusic();
+                }
+
+                if (rl.isKeyPressed(rl.KeyboardKey.b)) {
+                    switch (game.soundEffects) {
+                        .On => game.soundEffects = .Off,
+                        .Off => game.soundEffects = .On,
+                    }
+                    game.setSoundEffects();
+                }
+
+                if (rl.isKeyPressed(rl.KeyboardKey.backspace)) {
+                    game.state = .Initial;
+                }
+            },
+            .Playing => {
+                if (game.remainingBots == 0) {
+                    game.state = .PlayerWin;
+                    continue :gameLoop;
+                }
+
+                game.player.update(deltaTime);
+                game.player.draw();
+
+                for (game.player.bullets[0..]) |*b| {
+                    for (game.bots[0..game.activeBotCount]) |*bot| {
+                        if (b.isActive and bot.isActive) {
+                            if (rl.checkCollisionRecs(b.getRectangle(), bot.getRectangle())) {
+                                b.isActive = false;
+                                bot.isActive = false;
+                                game.currentScore.score += 10;
+                                game.remainingBots -= 1;
+
+                                game.spawnExplosion(
+                                    bot.position.x + bot.size.x / 2 - 25,
+                                    bot.position.y + bot.size.y / 2 - 25,
+                                );
+                                if (game.soundEffects == .On) rl.playSound(assetServer.explosionSound);
+                            }
+                        }
+                    }
+                }
+
+                for (game.bots[0..]) |*bot| {
+                    if (bot.isActive) {
+                        bot.playerLastPosition = game.player.position;
+
+                        if (rl.checkCollisionRecs(game.player.getRectangle(), bot.getRectangle())) {
+                            game.state = .PlayerLoose;
+                            continue :gameLoop;
+                        }
+                        if (bot.canShoot) {
+                            var bullet = &bot.bullets[bot.bulletIndex];
+                            if (!bullet.isActive) {
+                                bullet.position.x = bot.position.x + (bot.size.x / 2) - (bullet.size.x / 2);
+                                bullet.position.y = bot.position.y + bot.size.y;
+                                bullet.direction = -1.0;
+                                bullet.isActive = true;
+                                bot.bulletIndex = (bot.bulletIndex + 1) % config.MAX_BULLET_COUNT;
+                            }
+                            bot.canShoot = false;
+                        }
+                    }
+                }
+
+                for (game.chips[0..]) |*c| {
+                    if (c.isActive) {
+                        if (rl.checkCollisionRecs(game.player.getRectangle(), c.getRectangle())) {
+                            game.state = .PlayerLoose;
+                            continue :gameLoop;
+                        }
+                    }
+                }
+
+                for (game.bots[0..game.activeBotCount]) |*bot| {
+                    if (bot.isActive) {
+                        for (bot.bullets[0..]) |*bullet| {
+                            if (bullet.isActive) {
+                                if (rl.checkCollisionRecs(game.player.getRectangle(), bullet.getRectangle())) {
+                                    game.state = .PlayerLoose;
+                                    continue :gameLoop;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (game.bots[0..game.activeBotCount]) |*bot| {
+                    bot.update(deltaTime);
+                }
+                for (game.bots[0..game.activeBotCount]) |*bot| {
+                    bot.draw();
+                    for (bot.bullets[0..]) |*b| {
+                        b.update(deltaTime);
+                        b.draw();
+                    }
+                }
+                for (game.chips[0..]) |*c| {
+                    c.update(deltaTime);
+                    c.draw();
+                }
+
+                for (game.explosions[0..]) |*e| {
+                    e.update(deltaTime);
+                    e.draw();
+                }
+
+                game.jumper.update(deltaTime);
+                game.jumper.move(60 * deltaTime, 30 * deltaTime);
+                game.jumper.draw();
+                game.currentScore.elapsedTime += deltaTime;
+            },
+            .PlayerWin => {
+                rl.clearBackground(config.WIN_BACKGROUND_COLOR);
+                Designer.playerWinText.draw(TextAlignment.Center, .{ game.calculateScore(), game.bestScore.score });
+                if (!rl.isSoundPlaying(assetServer.winningSound) and !game.winningSoundPlayed) {
+                    rl.playSound(assetServer.winningSound);
+                    game.winningSoundPlayed = true;
+                }
+                if (rl.isSoundPlaying(assetServer.levelMusic)) {
+                    rl.stopSound(assetServer.levelMusic);
+                }
+                if (rl.isKeyPressed(rl.KeyboardKey.r)) {
+                    try game.reset();
+                    continue :gameLoop;
+                }
+                const playerScore = PlayerScore.init(game.currentScore.elapsedTime, game.calculateScore());
+                Data.updateBestScore(&game.bestScore, playerScore);
+                try Data.savePlayerScore(game.bestScore);
+            },
+            .PlayerLoose => {
+                rl.clearBackground(config.LOOSE_BACKGROUND_COLOR);
+                Designer.gameOverText.draw(TextAlignment.Center, .{});
+                if (!rl.isSoundPlaying(assetServer.losingSound) and !game.losingSoundPlayed) {
+                    rl.playSound(assetServer.losingSound);
+                    game.losingSoundPlayed = true;
+                }
+                if (rl.isSoundPlaying(assetServer.levelMusic)) {
+                    rl.stopSound(assetServer.levelMusic);
+                }
+                if (rl.isKeyPressed(rl.KeyboardKey.r)) {
+                    try game.reset();
+                    continue :gameLoop;
+                }
+            },
+        }
+    }
+}
