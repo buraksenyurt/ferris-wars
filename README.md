@@ -12,16 +12,9 @@ First of all you need to have Zig installed on your machine. I am using Zig vers
 zig build run
 ```
 
-## More Todos
-
-- [ ] Write a game design document
-- [ ] Refactor the codebase
-- [ ] Add different levels
-- [ ] Refactor configuration menu design
-
 ## Contributing
 
-Feel free to open issues or submit pull requests if you want to contribute to the project! You can also suggest new features or report bugs.
+Feel free to open issues or submit pull requests if you want to contribute to the project! You can also suggest new features or report bugs. There is a lot of stuff [to dos](gdd/README.md#7-development-roadmap) in game design document.
 
 ## License
 
