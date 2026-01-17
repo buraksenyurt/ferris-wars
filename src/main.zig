@@ -35,8 +35,8 @@ pub fn main() !void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        if (!rl.isSoundPlaying(assetServer.levelMusic) and game.music == .On) {
-            rl.playSound(assetServer.levelMusic);
+        if (!rl.isSoundPlaying(assetServer.getSound("levelMusic")) and game.music == .On) {
+            rl.playSound(assetServer.getSound("levelMusic"));
         }
 
         rl.clearBackground(config.BACKGROUND_COLOR);
@@ -161,12 +161,12 @@ pub fn main() !void {
             .PlayerWin => {
                 rl.clearBackground(config.WIN_BACKGROUND_COLOR);
                 Designer.playerWinText.draw(TextAlignment.Center, .{ game.calculateScore(), game.bestScore.score });
-                if (!rl.isSoundPlaying(assetServer.winningSound) and !game.winningSoundPlayed) {
-                    rl.playSound(assetServer.winningSound);
+                if (!rl.isSoundPlaying(assetServer.getSound("winning")) and !game.winningSoundPlayed) {
+                    rl.playSound(assetServer.getSound("winning"));
                     game.winningSoundPlayed = true;
                 }
-                if (rl.isSoundPlaying(assetServer.levelMusic)) {
-                    rl.stopSound(assetServer.levelMusic);
+                if (rl.isSoundPlaying(assetServer.getSound("levelMusic"))) {
+                    rl.stopSound(assetServer.getSound("levelMusic"));
                 }
                 if (rl.isKeyPressed(rl.KeyboardKey.r)) {
                     try game.reset();
@@ -179,12 +179,12 @@ pub fn main() !void {
             .PlayerLoose => {
                 rl.clearBackground(config.LOOSE_BACKGROUND_COLOR);
                 Designer.gameOverText.draw(TextAlignment.Center, .{});
-                if (!rl.isSoundPlaying(assetServer.losingSound) and !game.losingSoundPlayed) {
-                    rl.playSound(assetServer.losingSound);
+                if (!rl.isSoundPlaying(assetServer.getSound("looser")) and !game.losingSoundPlayed) {
+                    rl.playSound(assetServer.getSound("looser"));
                     game.losingSoundPlayed = true;
                 }
-                if (rl.isSoundPlaying(assetServer.levelMusic)) {
-                    rl.stopSound(assetServer.levelMusic);
+                if (rl.isSoundPlaying(assetServer.getSound("levelMusic"))) {
+                    rl.stopSound(assetServer.getSound("levelMusic"));
                 }
                 if (rl.isKeyPressed(rl.KeyboardKey.r)) {
                     try game.reset();

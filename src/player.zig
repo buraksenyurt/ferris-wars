@@ -70,8 +70,8 @@ pub const Player = struct {
                     self.bulletCooldown = config.BULLET_COOLDOWN;
                     self.totalBulletsFired += 1;
 
-                    if (!rl.isSoundPlaying(self.assetServer.shootingSound) and self.soundEffectIsActive) {
-                        rl.playSound(self.assetServer.shootingSound);
+                    if (!rl.isSoundPlaying(self.assetServer.getSound("shooting")) and self.soundEffectIsActive) {
+                        rl.playSound(self.assetServer.getSound("shooting"));
                     }
 
                     break;

@@ -219,8 +219,8 @@ pub const Game = struct {
 
     pub fn setMusic(self: *@This()) void {
         switch (self.music) {
-            .On => rl.resumeSound(self.assetServer.levelMusic),
-            .Off => rl.pauseSound(self.assetServer.levelMusic),
+            .On => rl.resumeSound(self.assetServer.getSound("levelMusic")),
+            .Off => rl.pauseSound(self.assetServer.getSound("levelMusic")),
         }
     }
 
@@ -245,7 +245,7 @@ pub const Game = struct {
                             bot.position.x + bot.size.x / 2 - 25,
                             bot.position.y + bot.size.y / 2 - 25,
                         );
-                        if (self.soundEffects == .On) rl.playSound(self.assetServer.explosionSound);
+                        if (self.soundEffects == .On) rl.playSound(self.assetServer.getSound("explosion"));
                     }
                 }
             }
@@ -333,7 +333,7 @@ pub const Game = struct {
                         self.jumper.position.x + self.jumper.size.x / 2 - 25,
                         self.jumper.position.y + self.jumper.size.y / 2 - 25,
                     );
-                    if (self.soundEffects == .On) rl.playSound(self.assetServer.explosionSound);
+                    if (self.soundEffects == .On) rl.playSound(self.assetServer.getSound("explosion"));
 
                     if (self.jumper.strength > 0) {
                         self.jumper.strength -= 25;
