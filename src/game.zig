@@ -194,6 +194,7 @@ pub const Game = struct {
         self.jumper.animation.isActive = true;
         self.jumper.animation = JumperAnimation.init(self.assetServer);
         self.jumper.animation.spawn(100, 100);
+        self.jumper.strength = 100;
     }
 
     pub fn spawnExplosion(self: *@This(), x: f32, y: f32) void {
@@ -230,7 +231,7 @@ pub const Game = struct {
         }
     }
 
-    pub fn checkPlayerBulletsCollision(self: *@This()) void {
+    pub fn checkPlayerHitsBot(self: *@This()) void {
         for (self.player.bullets[0..]) |*bullet| {
             for (self.bots[0..self.activeBotCount]) |*bot| {
                 if (bullet.isActive and bot.isActive) {
@@ -251,7 +252,7 @@ pub const Game = struct {
         }
     }
 
-    pub fn checkBotsCollision(self: *@This()) bool {
+    pub fn checkBotCollisionWithPlayer(self: *@This()) bool {
         for (self.bots[0..]) |*bot| {
             if (bot.isActive) {
                 bot.playerLastPosition = self.player.position;
@@ -283,7 +284,7 @@ pub const Game = struct {
         }
     }
 
-    pub fn checkChipCollision(self: *@This()) bool {
+    pub fn checkChipCollisionWithPlayer(self: *@This()) bool {
         for (self.chips[0..]) |*c| {
             if (c.isActive) {
                 if (rl.checkCollisionRecs(self.player.getRectangle(), c.getRectangle())) {
@@ -295,7 +296,7 @@ pub const Game = struct {
         return false;
     }
 
-    pub fn checkBotsBulletCollision(self: *@This()) bool {
+    pub fn checkBotsBulletHitPlayerCollision(self: *@This()) bool {
         for (self.bots[0..self.activeBotCount]) |*bot| {
             if (bot.isActive) {
                 for (bot.bullets[0..]) |*bullet| {
@@ -309,5 +310,40 @@ pub const Game = struct {
             }
         }
         return false;
+    }
+
+    pub fn checkJumperCollisionWithPlayer(self: *@This()) bool {
+        if (self.jumper.isActive) {
+            if (rl.checkCollisionRecs(self.player.getRectangle(), self.jumper.getRectangle())) {
+                self.state = .PlayerLoose;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn checkPlayerHitsJumper(self: *@This()) void {
+        if (!self.jumper.isActive) return;
+
+        for (self.player.bullets[0..]) |*bullet| {
+            if (bullet.isActive) {
+                if (rl.checkCollisionRecs(bullet.getRectangle(), self.jumper.getRectangle())) {
+                    bullet.isActive = false;
+                    self.spawnExplosion(
+                        self.jumper.position.x + self.jumper.size.x / 2 - 25,
+                        self.jumper.position.y + self.jumper.size.y / 2 - 25,
+                    );
+                    if (self.soundEffects == .On) rl.playSound(self.assetServer.explosionSound);
+
+                    if (self.jumper.strength > 0) {
+                        self.jumper.strength -= 25;
+                    }
+                    if (self.jumper.strength <= 0) {
+                        self.jumper.isActive = false;
+                        self.currentScore.score += 50;
+                    }
+                }
+            }
+        }
     }
 };

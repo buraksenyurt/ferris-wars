@@ -102,7 +102,7 @@ pub fn main() !void {
                 }
             },
             .Playing => {
-                if (game.remainingBots == 0) {
+                if (game.remainingBots == 0 and !game.jumper.isActive) {
                     game.state = .PlayerWin;
                     continue :gameLoop;
                 }
@@ -111,11 +111,13 @@ pub fn main() !void {
                 game.player.draw();
 
                 game.botsFire();
-                game.checkPlayerBulletsCollision();
+                game.checkPlayerHitsBot();
+                game.checkPlayerHitsJumper();
 
-                if (game.checkBotsCollision()) continue :gameLoop;
-                if (game.checkChipCollision()) continue :gameLoop;
-                if (game.checkBotsBulletCollision()) continue :gameLoop;
+                if (game.checkBotCollisionWithPlayer()) continue :gameLoop;
+                if (game.checkChipCollisionWithPlayer()) continue :gameLoop;
+                if (game.checkBotsBulletHitPlayerCollision()) continue :gameLoop;
+                if (game.checkJumperCollisionWithPlayer()) continue :gameLoop;
 
                 for (game.bots[0..game.activeBotCount]) |*bot| {
                     bot.update(deltaTime);

@@ -9,6 +9,7 @@ pub const Jumper = struct {
     animation: JumperAnimation,
     isActive: bool = false,
     direction: rl.Vector2,
+    strength: i32,
 
     pub fn update(self: *@This(), deltaTime: f32) void {
         if (!self.isActive) return;
