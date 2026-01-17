@@ -14,6 +14,7 @@ pub const AssetServer = struct {
     explosionSound: rl.Sound = undefined,
     levelMusic: rl.Sound = undefined,
     shootingSound: rl.Sound = undefined,
+    background: rl.Texture2D = undefined,
 
     pub fn load() !@This() {
         var assets = @This(){};
@@ -26,6 +27,7 @@ pub const AssetServer = struct {
         assets.bullet = try rl.loadTexture("resources/assets/rocket.png");
         assets.botBullet = try rl.loadTexture("resources/assets/botBullet.png");
         assets.cover = try rl.loadTexture("resources/assets/splash.png");
+        assets.background = try rl.loadTexture("resources/assets/background.png");
 
         // Sprite Sheets
         assets.explosionAnimation = try rl.loadTexture("resources/sheets/explosion.png");
@@ -48,6 +50,7 @@ pub const AssetServer = struct {
         }
         rl.unloadTexture(self.bullet);
         rl.unloadTexture(self.cover);
+        rl.unloadTexture(self.background);
         rl.unloadTexture(self.botBullet);
         rl.unloadTexture(self.explosionAnimation);
         rl.unloadTexture(self.chipAnimation);

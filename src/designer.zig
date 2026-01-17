@@ -37,6 +37,16 @@ pub const hudText = TextBlock{
     .color = config.HUD_FONT_COLOR,
 };
 
+pub const miniCreditText = TextBlock{
+    .text = "Developed by Burak Selim Senyurt - 2025",
+    .position = rl.Vector2{
+        .x = 10.0,
+        .y = @as(f32, config.AREA_HEIGHT) + 10.0,
+    },
+    .fontSize = config.HUD_FONT_SIZE,
+    .color = rl.Color.white,
+};
+
 const configurationViewText =
     \\  Configuration
     \\

@@ -42,24 +42,6 @@ pub fn main() !void {
 
         rl.clearBackground(config.BACKGROUND_COLOR);
 
-        rl.drawRectangle(
-            0,
-            config.AREA_HEIGHT,
-            config.SCREEN_WIDTH,
-            config.SCREEN_HEIGHT - config.AREA_HEIGHT,
-            config.HUD_BACKGROUND_COLOR,
-        );
-        Designer.hudText.draw(
-            .Left,
-            .{
-                game.totalBotCount,
-                game.remainingBots,
-                game.currentScore.score,
-                game.player.totalBulletsFired,
-                @as(i32, @intFromFloat(game.currentScore.elapsedTime)),
-            },
-        );
-
         switch (game.state) {
             .Initial => {
                 rl.drawTexture(
@@ -68,6 +50,15 @@ pub fn main() !void {
                     0,
                     rl.Color.white,
                 );
+
+                rl.drawRectangle(
+                    0,
+                    config.AREA_HEIGHT,
+                    config.SCREEN_WIDTH,
+                    config.SCREEN_HEIGHT - config.AREA_HEIGHT,
+                    config.HUD_BACKGROUND_COLOR,
+                );
+                Designer.miniCreditText.draw(TextAlignment.Left, .{});
 
                 if (rl.isKeyPressed(rl.KeyboardKey.enter) or Designer.StartGameButton.isClicked()) {
                     game.state = .Playing;
@@ -102,6 +93,30 @@ pub fn main() !void {
                 }
             },
             .Playing => {
+                rl.clearBackground(config.BACKGROUND_COLOR);
+                rl.drawTexture(
+                    assetServer.background,
+                    0,
+                    0,
+                    rl.Color.white,
+                );
+                rl.drawRectangle(
+                    0,
+                    config.AREA_HEIGHT,
+                    config.SCREEN_WIDTH,
+                    config.SCREEN_HEIGHT - config.AREA_HEIGHT,
+                    config.HUD_BACKGROUND_COLOR,
+                );
+                Designer.hudText.draw(
+                    .Left,
+                    .{
+                        game.totalBotCount,
+                        game.remainingBots,
+                        game.currentScore.score,
+                        game.player.totalBulletsFired,
+                        @as(i32, @intFromFloat(game.currentScore.elapsedTime)),
+                    },
+                );
                 if (game.remainingBots == 0 and !game.jumper.isActive) {
                     game.state = .PlayerWin;
                     continue :gameLoop;
