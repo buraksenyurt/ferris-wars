@@ -110,68 +110,12 @@ pub fn main() !void {
                 game.player.update(deltaTime);
                 game.player.draw();
 
-                for (game.player.bullets[0..]) |*b| {
-                    for (game.bots[0..game.activeBotCount]) |*bot| {
-                        if (b.isActive and bot.isActive) {
-                            if (rl.checkCollisionRecs(b.getRectangle(), bot.getRectangle())) {
-                                b.isActive = false;
-                                bot.isActive = false;
-                                game.currentScore.score += 10;
-                                game.remainingBots -= 1;
+                game.botsFire();
+                game.checkPlayerBulletsCollision();
 
-                                game.spawnExplosion(
-                                    bot.position.x + bot.size.x / 2 - 25,
-                                    bot.position.y + bot.size.y / 2 - 25,
-                                );
-                                if (game.soundEffects == .On) rl.playSound(assetServer.explosionSound);
-                            }
-                        }
-                    }
-                }
-
-                for (game.bots[0..]) |*bot| {
-                    if (bot.isActive) {
-                        bot.playerLastPosition = game.player.position;
-
-                        if (rl.checkCollisionRecs(game.player.getRectangle(), bot.getRectangle())) {
-                            game.state = .PlayerLoose;
-                            continue :gameLoop;
-                        }
-                        if (bot.canShoot) {
-                            var bullet = &bot.bullets[bot.bulletIndex];
-                            if (!bullet.isActive) {
-                                bullet.position.x = bot.position.x + (bot.size.x / 2) - (bullet.size.x / 2);
-                                bullet.position.y = bot.position.y + bot.size.y;
-                                bullet.direction = -1.0;
-                                bullet.isActive = true;
-                                bot.bulletIndex = (bot.bulletIndex + 1) % config.MAX_BULLET_COUNT;
-                            }
-                            bot.canShoot = false;
-                        }
-                    }
-                }
-
-                for (game.chips[0..]) |*c| {
-                    if (c.isActive) {
-                        if (rl.checkCollisionRecs(game.player.getRectangle(), c.getRectangle())) {
-                            game.state = .PlayerLoose;
-                            continue :gameLoop;
-                        }
-                    }
-                }
-
-                for (game.bots[0..game.activeBotCount]) |*bot| {
-                    if (bot.isActive) {
-                        for (bot.bullets[0..]) |*bullet| {
-                            if (bullet.isActive) {
-                                if (rl.checkCollisionRecs(game.player.getRectangle(), bullet.getRectangle())) {
-                                    game.state = .PlayerLoose;
-                                    continue :gameLoop;
-                                }
-                            }
-                        }
-                    }
-                }
+                if (game.checkBotsCollision()) continue :gameLoop;
+                if (game.checkChipCollision()) continue :gameLoop;
+                if (game.checkBotsBulletCollision()) continue :gameLoop;
 
                 for (game.bots[0..game.activeBotCount]) |*bot| {
                     bot.update(deltaTime);

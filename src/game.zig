@@ -229,4 +229,85 @@ pub const Game = struct {
             .Off => self.player.soundEffectIsActive = false,
         }
     }
+
+    pub fn checkPlayerBulletsCollision(self: *@This()) void {
+        for (self.player.bullets[0..]) |*bullet| {
+            for (self.bots[0..self.activeBotCount]) |*bot| {
+                if (bullet.isActive and bot.isActive) {
+                    if (rl.checkCollisionRecs(bullet.getRectangle(), bot.getRectangle())) {
+                        bullet.isActive = false;
+                        bot.isActive = false;
+                        self.currentScore.score += 10;
+                        self.remainingBots -= 1;
+
+                        self.spawnExplosion(
+                            bot.position.x + bot.size.x / 2 - 25,
+                            bot.position.y + bot.size.y / 2 - 25,
+                        );
+                        if (self.soundEffects == .On) rl.playSound(self.assetServer.explosionSound);
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn checkBotsCollision(self: *@This()) bool {
+        for (self.bots[0..]) |*bot| {
+            if (bot.isActive) {
+                bot.playerLastPosition = self.player.position;
+
+                if (rl.checkCollisionRecs(self.player.getRectangle(), bot.getRectangle())) {
+                    self.state = .PlayerLoose;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    pub fn botsFire(self: *@This()) void {
+        for (self.bots[0..]) |*bot| {
+            if (bot.isActive) {
+                if (bot.canShoot) {
+                    var bullet = &bot.bullets[bot.bulletIndex];
+                    if (!bullet.isActive) {
+                        bullet.position.x = bot.position.x + (bot.size.x / 2) - (bullet.size.x / 2);
+                        bullet.position.y = bot.position.y + bot.size.y;
+                        bullet.direction = -1.0;
+                        bullet.isActive = true;
+                        bot.bulletIndex = (bot.bulletIndex + 1) % config.MAX_BULLET_COUNT;
+                    }
+                    bot.canShoot = false;
+                }
+            }
+        }
+    }
+
+    pub fn checkChipCollision(self: *@This()) bool {
+        for (self.chips[0..]) |*c| {
+            if (c.isActive) {
+                if (rl.checkCollisionRecs(self.player.getRectangle(), c.getRectangle())) {
+                    self.state = .PlayerLoose;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    pub fn checkBotsBulletCollision(self: *@This()) bool {
+        for (self.bots[0..self.activeBotCount]) |*bot| {
+            if (bot.isActive) {
+                for (bot.bullets[0..]) |*bullet| {
+                    if (bullet.isActive) {
+                        if (rl.checkCollisionRecs(self.player.getRectangle(), bullet.getRectangle())) {
+                            self.state = .PlayerLoose;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
 };
