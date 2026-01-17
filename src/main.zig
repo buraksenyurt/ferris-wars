@@ -22,13 +22,12 @@ pub fn main() !void {
     rl.setTargetFPS(config.FPS);
 
     const assetServer = try AssetServer.load();
+    defer assetServer.unload();
 
     var game = try Game.init(
         assetServer,
     );
     game.bestScore = try Data.loadPlayerScore();
-
-    defer assetServer.unload();
 
     gameLoop: while (!rl.windowShouldClose()) {
         const deltaTime = rl.getFrameTime();
@@ -45,7 +44,7 @@ pub fn main() !void {
         switch (game.state) {
             .Initial => {
                 rl.drawTexture(
-                    assetServer.cover,
+                    assetServer.get("splash"),
                     0,
                     0,
                     rl.Color.white,
@@ -95,7 +94,7 @@ pub fn main() !void {
             .Playing => {
                 rl.clearBackground(config.BACKGROUND_COLOR);
                 rl.drawTexture(
-                    assetServer.background,
+                    assetServer.get("background"),
                     0,
                     0,
                     rl.Color.white,

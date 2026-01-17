@@ -21,7 +21,7 @@ pub const BotBullet = struct {
                 .y = config.BULLET_HEIGHT,
             },
             .isActive = false,
-            .asset = assetServer.botBullet,
+            .asset = assetServer.get("botBullet"),
         };
     }
 

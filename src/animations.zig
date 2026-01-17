@@ -23,7 +23,7 @@ pub const ExplosionAnimation = struct {
         return .{
             .position = rl.Vector2{ .x = 0, .y = 0 },
             .isActive = false,
-            .spriteSheet = assetServer.explosionAnimation,
+            .spriteSheet = assetServer.get("explosion"),
         };
     }
 
@@ -94,7 +94,7 @@ pub const ChipAnimation = struct {
         return .{
             .position = rl.Vector2{ .x = 0, .y = 0 },
             .isActive = false,
-            .spriteSheet = assetServer.chipAnimation,
+            .spriteSheet = assetServer.get("chip"),
         };
     }
 
@@ -167,7 +167,7 @@ pub const JumperAnimation = struct {
         return .{
             .position = rl.Vector2{ .x = 0, .y = 0 },
             .isActive = false,
-            .spriteSheet = assetServer.jumperAnimation,
+            .spriteSheet = assetServer.get("jumper"),
         };
     }
 

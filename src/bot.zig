@@ -18,8 +18,13 @@ pub const Bot = struct {
     playerLastPosition: rl.Vector2 = .{ .x = 0, .y = 0 },
 
     pub fn init(assetServer: AssetServer, startX: f32, startY: f32) @This() {
-        // std.log.info("Creating Bot at position ({d}, {d})\n", .{ startX, startY });
-        const botId: usize = @intCast(rl.getRandomValue(0, assetServer.bots.len - 1));
+        const bots: [3]rl.Texture2D = .{
+            assetServer.get("bot_1"),
+            assetServer.get("bot_2"),
+            assetServer.get("bot_3"),
+        };
+
+        const botId: usize = @intCast(rl.getRandomValue(0, bots.len - 1));
         var bot: @This() =
             .{
                 .position = rl.Vector2{
@@ -31,7 +36,7 @@ pub const Bot = struct {
                     .x = config.BOT_WIDTH,
                     .y = config.BOT_HEIGHT,
                 },
-                .asset = assetServer.bots[botId],
+                .asset = bots[botId],
                 .isActive = true,
             };
         bot.shootCooldown = @floatFromInt(rl.getRandomValue(3, 8));
