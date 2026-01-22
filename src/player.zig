@@ -94,7 +94,7 @@ pub const Player = struct {
         );
 
         rl.drawTexture(
-            self.assetServer.get("hero"),
+            self.assetServer.getTexture("hero"),
             @intFromFloat(x),
             @intFromFloat(y),
             rl.Color.white,

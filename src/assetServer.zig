@@ -3,33 +3,33 @@ const rl = @import("raylib");
 
 pub const AssetServer = struct {
     assets: []Asset = undefined,
-    sounds: []Sound = undefined,
+    sounds: []Asset = undefined,
 
     pub fn load() !@This() {
         var assets = @This(){};
 
         const assetCount = try findAssetsCount("png");
-        assets.assets = try fillAssets(assetCount);
+        assets.assets = try fillAssets(assetCount, "png", AssetType.Texture);
 
         const soundCount = try findAssetsCount("wav");
-        assets.sounds = try fillSounds(soundCount);
+        assets.sounds = try fillAssets(soundCount, "wav", AssetType.Sound);
 
         return assets;
     }
 
     pub fn unload(self: @This()) void {
         for (self.assets) |asset| {
-            rl.unloadTexture(asset.texture);
+            rl.unloadTexture(asset.kind.texture);
         }
         for (self.sounds) |sound| {
-            rl.unloadSound(sound.sound);
+            rl.unloadSound(sound.kind.sound);
         }
     }
 
-    pub fn get(self: @This(), name: []const u8) rl.Texture2D {
+    pub fn getTexture(self: @This(), name: []const u8) rl.Texture2D {
         for (self.assets) |asset| {
             if (std.mem.eql(u8, asset.name, name)) {
-                return asset.texture;
+                return asset.kind.texture;
             }
         }
         return undefined;
@@ -38,7 +38,7 @@ pub const AssetServer = struct {
     pub fn getSound(self: @This(), name: []const u8) rl.Sound {
         for (self.sounds) |sound| {
             if (std.mem.eql(u8, sound.name, name)) {
-                return sound.sound;
+                return sound.kind.sound;
             }
         }
         return undefined;
@@ -60,7 +60,7 @@ fn findAssetsCount(fileType: []const u8) !usize {
     return counter;
 }
 
-fn fillAssets(count: usize) ![]Asset {
+fn fillAssets(count: usize, fileType: []const u8, assetType: AssetType) ![]Asset {
     var assets: []Asset = undefined;
     var allocator = std.heap.page_allocator;
     assets = try allocator.alloc(Asset, count);
@@ -71,7 +71,7 @@ fn fillAssets(count: usize) ![]Asset {
     var iterator = dir.iterate();
     var index: usize = 0;
     while (try iterator.next()) |entry| {
-        if (std.mem.endsWith(u8, entry.name, "png")) {
+        if (std.mem.endsWith(u8, entry.name, fileType)) {
             var path_buf: [256:0]u8 = undefined;
             const path = try std.fmt.bufPrintZ(&path_buf, "resources/{s}", .{entry.name});
 
@@ -82,59 +82,36 @@ fn fillAssets(count: usize) ![]Asset {
 
             const copyOfFileName = try allocator.dupe(u8, fileName);
 
-            assets[index] = Asset{
-                .id = @intCast(index),
-                .name = copyOfFileName,
-                .texture = try rl.loadTexture(path),
+            assets[index] = switch (assetType) {
+                .Texture => Asset{
+                    .id = @intCast(index),
+                    .name = copyOfFileName,
+                    .kind = AssetUnion{ .texture = try rl.loadTexture(path) },
+                },
+                .Sound => Asset{
+                    .id = @intCast(index),
+                    .name = copyOfFileName,
+                    .kind = AssetUnion{ .sound = try rl.loadSound(path) },
+                },
             };
             index += 1;
         }
     }
-    // std.log.warn("{any}", .{assets});
     return assets;
 }
 
-fn fillSounds(count: usize) ![]Sound {
-    var sounds: []Sound = undefined;
-    var allocator = std.heap.page_allocator;
-    sounds = try allocator.alloc(Sound, count);
-
-    var dir = try std.fs.cwd().openDir("resources", .{ .iterate = true });
-    defer dir.close();
-
-    var iterator = dir.iterate();
-    var index: usize = 0;
-    while (try iterator.next()) |entry| {
-        if (std.mem.endsWith(u8, entry.name, "wav")) {
-            var path_buf: [256:0]u8 = undefined;
-            const path = try std.fmt.bufPrintZ(&path_buf, "resources/{s}", .{entry.name});
-
-            const fileName = if (std.mem.lastIndexOf(u8, entry.name, ".")) |dot_index|
-                entry.name[0..dot_index]
-            else
-                entry.name;
-
-            const copyOfFileName = try allocator.dupe(u8, fileName);
-
-            sounds[index] = Sound{
-                .id = @intCast(index),
-                .name = copyOfFileName,
-                .sound = try rl.loadSound(path),
-            };
-            index += 1;
-        }
-    }
-    return sounds;
-}
+const AssetUnion = union(enum) {
+    texture: rl.Texture2D,
+    sound: rl.Sound,
+};
 
 const Asset = struct {
     id: u8,
     name: []const u8,
-    texture: rl.Texture2D,
+    kind: AssetUnion,
 };
 
-const Sound = struct {
-    id: u8,
-    name: []const u8,
-    sound: rl.Sound,
+const AssetType = enum {
+    Texture,
+    Sound,
 };

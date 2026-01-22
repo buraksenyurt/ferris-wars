@@ -25,7 +25,7 @@ pub const Animation = struct {
             .currentFrame = 0,
             .frameTimer = 0.0,
             .frameDuration = frameDuration,
-            .spriteSheet = assetServer.get(spriteName),
+            .spriteSheet = assetServer.getTexture(spriteName),
             .frames = frames,
             .frameOrder = frameOrder,
         };

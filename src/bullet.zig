@@ -20,7 +20,7 @@ pub const Bullet = struct {
                 .y = config.BULLET_HEIGHT,
             },
             .isActive = false,
-            .asset = assetServer.get("rocket"),
+            .asset = assetServer.getTexture("rocket"),
         };
     }
 

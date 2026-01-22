@@ -19,9 +19,9 @@ pub const Bot = struct {
 
     pub fn init(assetServer: AssetServer, startX: f32, startY: f32) @This() {
         const bots: [3]rl.Texture2D = .{
-            assetServer.get("bot_1"),
-            assetServer.get("bot_2"),
-            assetServer.get("bot_3"),
+            assetServer.getTexture("bot_1"),
+            assetServer.getTexture("bot_2"),
+            assetServer.getTexture("bot_3"),
         };
 
         const botId: usize = @intCast(rl.getRandomValue(0, bots.len - 1));

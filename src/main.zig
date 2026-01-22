@@ -44,7 +44,7 @@ pub fn main() !void {
         switch (game.state) {
             .Initial => {
                 rl.drawTexture(
-                    assetServer.get("splash"),
+                    assetServer.getTexture("splash"),
                     0,
                     0,
                     rl.Color.white,
@@ -94,7 +94,7 @@ pub fn main() !void {
             .Playing => {
                 rl.clearBackground(config.BACKGROUND_COLOR);
                 rl.drawTexture(
-                    assetServer.get("background"),
+                    assetServer.getTexture("background"),
                     0,
                     0,
                     rl.Color.white,
