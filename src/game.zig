@@ -7,10 +7,8 @@ const Chip = @import("chip.zig").Chip;
 const Player = @import("player.zig").Player;
 const Formations = @import("formation.zig").FORMATION;
 const AssetServer = @import("assetServer.zig").AssetServer;
-const Explosion = @import("animations.zig").ExplosionAnimation;
-const ChipAnimation = @import("animations.zig").ChipAnimation;
+const Animation = @import("animation.zig").Animation;
 const Jumper = @import("jumper.zig").Jumper;
-const JumperAnimation = @import("animations.zig").JumperAnimation;
 const PlayerScore = @import("data.zig").PlayerScore;
 const Data = @import("data.zig");
 
@@ -32,7 +30,7 @@ pub const Game = struct {
     bots: [config.MAX_BOT_COUNT]Bot = undefined,
     chips: [config.MAX_CHIP_COUNT]Chip = undefined,
     jumper: Jumper,
-    explosions: [config.MAX_EXPLOSION_COUNT]Explosion = undefined,
+    explosions: [config.MAX_EXPLOSION_COUNT]Animation = undefined,
     activeBotCount: usize = 0,
     totalBotCount: u32 = 0,
     state: States = .Initial,
@@ -65,7 +63,13 @@ pub const Game = struct {
         game.assetServer = assetServer;
 
         for (game.explosions[0..]) |*e| {
-            e.* = Explosion.init(assetServer);
+            e.* = Animation.init(
+                assetServer,
+                0.2,
+                "explosion",
+                &config.EXP_FRAME_RECTS,
+                &config.EXP_FRAME_ORDER,
+            );
         }
 
         try game.loadFormation();
@@ -141,7 +145,13 @@ pub const Game = struct {
 
     fn loadChips(self: *@This()) !void {
         for (self.chips[0..], 0..) |*c, index| {
-            c.*.animation = ChipAnimation.init(self.assetServer);
+            c.*.animation = Animation.init(
+                self.assetServer,
+                0.2,
+                "chip",
+                &config.CHIP_FRAME_RECTS,
+                &config.CHIP_FRAME_ORDER,
+            );
             c.*.size = rl.Vector2{
                 .x = config.CHIP_WIDTH,
                 .y = config.CHIP_HEIGHT,
@@ -192,7 +202,13 @@ pub const Game = struct {
         self.jumper.size = rl.Vector2{ .x = 64, .y = 64 };
         self.jumper.direction = rl.Vector2{ .x = 1.0, .y = 1.0 };
         self.jumper.animation.isActive = true;
-        self.jumper.animation = JumperAnimation.init(self.assetServer);
+        self.jumper.animation = Animation.init(
+            self.assetServer,
+            0.2,
+            "jumper",
+            &config.JUMPER_FRAME_RECTS,
+            &config.JUMPER_FRAME_ORDER,
+        );
         self.jumper.animation.spawn(100, 100);
         self.jumper.strength = 100;
     }

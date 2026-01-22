@@ -1,12 +1,12 @@
 const rl = @import("raylib");
-const JumperAnimation = @import("animations.zig").JumperAnimation;
+const Animation = @import("animation.zig").Animation;
 const config = @import("config.zig").Config;
 const std = @import("std");
 
 pub const Jumper = struct {
     position: rl.Vector2,
     size: rl.Vector2,
-    animation: JumperAnimation,
+    animation: Animation,
     isActive: bool = false,
     direction: rl.Vector2,
     strength: i32,
@@ -14,7 +14,7 @@ pub const Jumper = struct {
     pub fn update(self: *@This(), deltaTime: f32) void {
         if (!self.isActive) return;
         self.animation.position = self.position;
-        self.animation.update(deltaTime);
+        self.animation.update(deltaTime, false);
     }
 
     pub fn move(self: *@This(), deltaX: f32, deltaY: f32) void {

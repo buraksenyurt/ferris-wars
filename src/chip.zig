@@ -1,13 +1,13 @@
 const rl = @import("raylib");
 const config = @import("config.zig").Config;
 const std = @import("std");
-const ChipAnimation = @import("animations.zig").ChipAnimation;
+const Animation = @import("animation.zig").Animation;
 const AssetServer = @import("assetServer.zig").AssetServer;
 
 pub const Chip = struct {
     position: rl.Vector2,
     size: rl.Vector2,
-    animation: ChipAnimation,
+    animation: Animation,
     isActive: bool = false,
     currentLifetime: f32 = 0.0,
     maxLifetime: f32 = 0.0,
@@ -21,7 +21,7 @@ pub const Chip = struct {
             self.animation.isActive = false;
             return;
         }
-        if (self.animation.isActive) self.animation.update(deltaTime);
+        if (self.animation.isActive) self.animation.update(deltaTime, false);
     }
 
     pub fn draw(self: @This()) void {

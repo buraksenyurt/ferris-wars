@@ -149,7 +149,7 @@ pub fn main() !void {
                 }
 
                 for (game.explosions[0..]) |*e| {
-                    e.update(deltaTime);
+                    e.update(deltaTime, true);
                     e.draw();
                 }
 

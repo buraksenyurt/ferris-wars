@@ -52,6 +52,38 @@ pub const Config = struct {
     pub const CHIP_DISTANCE: f32 = 80.0;
     pub const CHIP_MAX_LOCATIONS_ATTEMPTS: usize = 50;
 
+    // Chip Animation
+    pub const CHIP_FRAME_ORDER = [7]usize{ 0, 1, 2, 3, 2, 1, 0 };
+
+    pub const CHIP_FRAME_RECTS = [4]rl.Rectangle{
+        .{ .x = 0, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 64, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 128, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 192, .y = 0, .width = 64, .height = 64 },
+    };
+
     // Explosions
     pub const MAX_EXPLOSION_COUNT: usize = 10;
+
+    // Explosion Animation
+    pub const EXP_FRAME_ORDER = [7]usize{ 0, 1, 2, 3, 2, 1, 0 };
+
+    pub const EXP_FRAME_RECTS = [4]rl.Rectangle{
+        .{ .x = 1, .y = 1, .width = 96, .height = 96 },
+        .{ .x = 99, .y = 1, .width = 96, .height = 96 },
+        .{ .x = 197, .y = 1, .width = 96, .height = 96 },
+        .{ .x = 295, .y = 1, .width = 96, .height = 96 },
+    };
+
+    // Jumper Animation
+    pub const JUMPER_FRAME_ORDER = [11]usize{ 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0 };
+
+    pub const JUMPER_FRAME_RECTS = [6]rl.Rectangle{
+        .{ .x = 0, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 64, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 128, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 192, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 256, .y = 0, .width = 64, .height = 64 },
+        .{ .x = 320, .y = 0, .width = 64, .height = 64 },
+    };
 };
