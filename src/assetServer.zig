@@ -46,7 +46,7 @@ pub const AssetServer = struct {
 };
 
 fn findAssetsCount(fileType: []const u8) !usize {
-    var dir = try std.fs.cwd().openDir("resources/assets", .{ .iterate = true });
+    var dir = try std.fs.cwd().openDir("resources", .{ .iterate = true });
     defer dir.close();
     var counter: usize = 0;
 
@@ -65,7 +65,7 @@ fn fillAssets(count: usize) ![]Asset {
     var allocator = std.heap.page_allocator;
     assets = try allocator.alloc(Asset, count);
 
-    var dir = try std.fs.cwd().openDir("resources/assets", .{ .iterate = true });
+    var dir = try std.fs.cwd().openDir("resources", .{ .iterate = true });
     defer dir.close();
 
     var iterator = dir.iterate();
@@ -73,7 +73,7 @@ fn fillAssets(count: usize) ![]Asset {
     while (try iterator.next()) |entry| {
         if (std.mem.endsWith(u8, entry.name, "png")) {
             var path_buf: [256:0]u8 = undefined;
-            const path = try std.fmt.bufPrintZ(&path_buf, "resources/assets/{s}", .{entry.name});
+            const path = try std.fmt.bufPrintZ(&path_buf, "resources/{s}", .{entry.name});
 
             const fileName = if (std.mem.lastIndexOf(u8, entry.name, ".")) |dot_index|
                 entry.name[0..dot_index]
@@ -99,7 +99,7 @@ fn fillSounds(count: usize) ![]Sound {
     var allocator = std.heap.page_allocator;
     sounds = try allocator.alloc(Sound, count);
 
-    var dir = try std.fs.cwd().openDir("resources/assets", .{ .iterate = true });
+    var dir = try std.fs.cwd().openDir("resources", .{ .iterate = true });
     defer dir.close();
 
     var iterator = dir.iterate();
@@ -107,7 +107,7 @@ fn fillSounds(count: usize) ![]Sound {
     while (try iterator.next()) |entry| {
         if (std.mem.endsWith(u8, entry.name, "wav")) {
             var path_buf: [256:0]u8 = undefined;
-            const path = try std.fmt.bufPrintZ(&path_buf, "resources/assets/{s}", .{entry.name});
+            const path = try std.fmt.bufPrintZ(&path_buf, "resources/{s}", .{entry.name});
 
             const fileName = if (std.mem.lastIndexOf(u8, entry.name, ".")) |dot_index|
                 entry.name[0..dot_index]
